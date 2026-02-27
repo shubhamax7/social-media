@@ -40,7 +40,7 @@ const DEFAULT_POST_LIST = [
     id: "2",
     title: "Going to Mumbai",
     body: "Hi, I am going to mumbai, see you soon.",
-    reactions: 2,
+    reactions: 14,
     userId: "user-10",
     tags: ["vacation", "Mumbai", "travel"],
   },
