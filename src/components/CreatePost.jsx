@@ -1,6 +1,27 @@
+import { useContext, useRef } from "react";
+import { PostList } from "../store/post-list-store";
+
 const CreatePost = () => {
+  const { addPost } = useContext(PostList);
+  const userIdElement = useRef();
+  const postTitleElement = useRef();
+  const postBodyElement = useRef();
+  const reactionsElement = useRef();
+  const tagsElement = useRef();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const userId = userIdElement.current.value;
+    const postTitle = postTitleElement.current.value;
+    const postBody = postBodyElement.current.value;
+    const reactions = reactionsElement.current.value;
+    const tags = tagsElement.current.value.split(" ");
+
+    addPost(userId, postTitle, postBody, reactions, tags);
+  };
+
   return (
-    <form className="create-post">
+    <form className="create-post" onSubmit={handleSubmit}>
       <div className="mb-3">
         <label htmlFor="userId" className="form-label">
           Enter your User Id here
@@ -9,6 +30,7 @@ const CreatePost = () => {
           type="text"
           className="form-control"
           id="userId"
+          ref={userIdElement}
           placeholder="Your User Id"
         />
       </div>
@@ -21,6 +43,7 @@ const CreatePost = () => {
           type="text"
           className="form-control"
           id="title"
+          ref={postTitleElement}
           placeholder="How are you feeling today..."
         />
       </div>
@@ -34,6 +57,7 @@ const CreatePost = () => {
           rows="4"
           className="form-control"
           id="body"
+          ref={postBodyElement}
           placeholder="How are you feeling today..."
         />
       </div>
@@ -46,6 +70,7 @@ const CreatePost = () => {
           type="text"
           className="form-control"
           id="reactions"
+          ref={reactionsElement}
           placeholder="How many peoplle reacted to this post"
         />
       </div>
@@ -58,6 +83,7 @@ const CreatePost = () => {
           type="text"
           className="form-control"
           id="tags"
+          ref={tagsElement}
           placeholder="Please enter tags using space"
         />
       </div>
