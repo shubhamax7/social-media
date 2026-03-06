@@ -4,13 +4,20 @@ import { PostList as PostListData } from "../store/post-list-store";
 import WelcomeMessage from "./WelcomeMessage";
 import LoadingSpinner from "./LoadingSpinner";
 
+let initialFetchDone = false;
+
 const PostList = () => {
   const { postList, addInitialPosts } = useContext(PostListData);
   const [fetching, setFetching] = useState(false);
 
   useEffect(() => {
+    if (initialFetchDone) return;
+    
     setFetching(true);
-    fetch("https://dummyjson.com/posts")
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    fetch("https://dummyjson.com/posts", { signal })
       .then((res) => res.json())
       .then((data) => {
         const normalizedPosts = data.posts.map((post) => {
@@ -25,8 +32,13 @@ const PostList = () => {
         });
 
         addInitialPosts(normalizedPosts);
+        initialFetchDone = true;
         setFetching(false);
       });
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   return (
