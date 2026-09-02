@@ -1,122 +1,153 @@
+import { useState } from "react";
+import {
+  MdHome,
+  MdAddCircleOutline,
+  MdSettings,
+  MdLogout,
+  MdPerson,
+  MdKeyboardArrowDown,
+  MdKeyboardArrowUp,
+} from "react-icons/md";
+import { RiSparklingFill } from "react-icons/ri";
+
 const Sidebar = ({ selectedTab, setSelectedTab }) => {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const navItems = [
+    { id: "Home", label: "Home", icon: <MdHome /> },
+    { id: "Create Post", label: "Create Post", icon: <MdAddCircleOutline /> },
+  ];
+
   return (
-    <div
-      className="d-flex flex-column flex-shrink-0 p-3 text-bg-dark sidebar"
-      style={{ width: "250px" }}
-    >
-      {" "}
-      <a
-        href="/"
-        className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"
-      >
-        {" "}
-        <svg
-          className="bi pe-none me-2"
-          width="40"
-          height="32"
-          aria-hidden="true"
-        >
-          <use xlinkHref="#bootstrap"></use>
-        </svg>{" "}
-        <span className="fs-4">Social Media</span>{" "}
-      </a>{" "}
-      <hr />{" "}
-      <ul className="nav nav-pills flex-column mb-auto">
-        {" "}
-        <li
-          className="nav-item"
-          onClick={() => {
-            setSelectedTab("Home");
-          }}
-        >
-          {" "}
-          <a
-            href="#"
-            className={`nav-link text-white ${selectedTab === "Home" && "active"}`}
-            aria-current="page"
-          >
-            {" "}
-            <svg
-              className="bi pe-none me-2"
-              width="16"
-              height="16"
-              aria-hidden="true"
+    <aside className="sidebar" aria-label="Main navigation">
+      {/* Brand */}
+      <a href="/" className="sidebar-brand" aria-label="SocialSphere home">
+        <div className="sidebar-brand-icon" aria-hidden="true">
+          <RiSparklingFill style={{ color: "#fff" }} />
+        </div>
+        <span className="sidebar-brand-text">SocialSphere</span>
+      </a>
+
+      <div className="sidebar-divider" />
+
+      {/* Navigation */}
+      <ul className="sidebar-nav" role="list">
+        {navItems.map((item) => (
+          <li key={item.id} className="sidebar-nav-item" role="listitem">
+            <button
+              className={`sidebar-nav-link${selectedTab === item.id ? " active" : ""}`}
+              onClick={() => setSelectedTab(item.id)}
+              aria-current={selectedTab === item.id ? "page" : undefined}
             >
-              <use xlinkHref="#home"></use>
-            </svg>
-            Home
-          </a>{" "}
-        </li>{" "}
-        <li
-          onClick={() => {
-            setSelectedTab("Create Post");
-          }}
+              <span className="sidebar-nav-icon" aria-hidden="true">
+                {item.icon}
+              </span>
+              <span className="sidebar-nav-label">{item.label}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {/* User Menu */}
+      <div className="sidebar-user">
+        <button
+          className="sidebar-user-btn"
+          onClick={() => setUserMenuOpen((o) => !o)}
+          aria-expanded={userMenuOpen}
+          aria-haspopup="menu"
+          aria-label="User menu"
         >
-          {" "}
-          <a
-            href="#"
-            className={`nav-link text-white ${selectedTab === "Create Post" && "active"}`}
-          >
-            {" "}
-            <svg
-              className="bi pe-none me-2"
-              width="16"
-              height="16"
-              aria-hidden="true"
-            >
-              <use xlinkHref="#speedometer2"></use>
-            </svg>
-            Create Post
-          </a>{" "}
-        </li>{" "}
-      </ul>{" "}
-      <hr />{" "}
-      <div className="dropdown">
-        {" "}
-        <a
-          href="#"
-          className="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        >
-          {" "}
           <img
-            src="https://github.com/mdo.png"
-            alt=""
-            width="32"
-            height="32"
-            className="rounded-circle me-2"
-          />{" "}
-          <strong>Shubham</strong>{" "}
-        </a>{" "}
-        <ul className="dropdown-menu dropdown-menu-dark text-small shadow">
-          {" "}
-          <li>
-            <a className="dropdown-item" href="#">
-              New project...
-            </a>
-          </li>{" "}
-          <li>
-            <a className="dropdown-item" href="#">
-              Settings
-            </a>
-          </li>{" "}
-          <li>
-            <a className="dropdown-item" href="#">
-              Profile
-            </a>
-          </li>{" "}
-          <li>
-            <hr className="dropdown-divider" />
-          </li>{" "}
-          <li>
-            <a className="dropdown-item" href="#">
+            src="https://api.dicebear.com/9.x/avataaars/svg?seed=SocialSphere"
+            alt="Your avatar"
+            className="sidebar-avatar"
+          />
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-name">Shubham</div>
+            <div className="sidebar-user-handle">@shubham</div>
+          </div>
+          <span aria-hidden="true">
+            {userMenuOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
+          </span>
+        </button>
+
+        {userMenuOpen && (
+          <div
+            role="menu"
+            style={{
+              marginTop: "8px",
+              background: "var(--color-bg-card)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-md)",
+              overflow: "hidden",
+              animation: "scaleIn 0.18s ease",
+            }}
+          >
+            {[
+              { icon: <MdPerson />, label: "Profile" },
+              { icon: <MdSettings />, label: "Settings" },
+            ].map(({ icon, label }) => (
+              <button
+                key={label}
+                role="menuitem"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  width: "100%",
+                  padding: "10px 14px",
+                  background: "none",
+                  border: "none",
+                  color: "var(--color-text-secondary)",
+                  fontSize: "var(--font-size-sm)",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--color-bg-glass-hover)";
+                  e.currentTarget.style.color = "var(--color-text-primary)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "none";
+                  e.currentTarget.style.color = "var(--color-text-secondary)";
+                }}
+              >
+                <span style={{ fontSize: "16px" }}>{icon}</span>
+                {label}
+              </button>
+            ))}
+            <div style={{ height: "1px", background: "var(--color-border)", margin: "4px 0" }} />
+            <button
+              role="menuitem"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                width: "100%",
+                padding: "10px 14px",
+                background: "none",
+                border: "none",
+                color: "var(--color-danger)",
+                fontSize: "var(--font-size-sm)",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+                textAlign: "left",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--color-danger-bg)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "none";
+              }}
+            >
+              <MdLogout style={{ fontSize: "16px" }} />
               Sign out
-            </a>
-          </li>{" "}
-        </ul>{" "}
-      </div>{" "}
-    </div>
+            </button>
+          </div>
+        )}
+      </div>
+    </aside>
   );
 };
 
