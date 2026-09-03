@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePostList } from "../store/post-list-store";
+import { useUserProfile } from "../store/UserProfileContext";
 import { useToast } from "./Toast";
 import { MdSend, MdImage, MdPreview } from "react-icons/md";
 import { FiTag, FiCheck, FiArrowLeft } from "react-icons/fi";
@@ -19,6 +20,7 @@ const PRESET_TAGS = ["react", "webdev", "ai", "javascript", "design", "coding", 
 
 const CreatePost = ({ setSelectedTab }) => {
   const { addPost } = usePostList();
+  const { profile } = useUserProfile();
   const { showToast } = useToast();
 
   const [title, setTitle] = useState("");
@@ -59,12 +61,13 @@ const CreatePost = ({ setSelectedTab }) => {
 
     setTimeout(() => {
       addPost(
-        "shubham",
+        profile.username || "shubham",
         title.trim(),
         body.trim(),
         0,
         selectedTags,
-        finalImage
+        finalImage,
+        profile
       );
 
       setIsSubmitting(false);

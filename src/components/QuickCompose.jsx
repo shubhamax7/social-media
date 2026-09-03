@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePostList } from "../store/post-list-store";
+import { useUserProfile } from "../store/UserProfileContext";
 import { useToast } from "./Toast";
 import { FiImage, FiSmile, FiTag, FiSend, FiX } from "react-icons/fi";
 
@@ -7,6 +8,7 @@ const POPULAR_TAGS = ["react", "webdev", "ai", "design", "coding", "vite"];
 
 const QuickCompose = () => {
   const { addPost } = usePostList();
+  const { profile } = useUserProfile();
   const { showToast } = useToast();
 
   const [title, setTitle] = useState("");
@@ -38,12 +40,13 @@ const QuickCompose = () => {
 
     setTimeout(() => {
       addPost(
-        "shubham",
+        profile.username || "shubham",
         postTitle,
         content.trim(),
         0,
         selectedTags,
-        imageUrl.trim() || null
+        imageUrl.trim() || null,
+        profile
       );
 
       setTitle("");
@@ -64,8 +67,8 @@ const QuickCompose = () => {
     <div className="quick-compose-card">
       <div className="quick-compose-header">
         <img
-          src="https://api.dicebear.com/9.x/avataaars/svg?seed=Shubham"
-          alt="Your avatar"
+          src={profile.avatarUrl}
+          alt={`${profile.name}'s avatar`}
           className="quick-compose-avatar"
         />
         <div className="quick-compose-inputs">

@@ -216,7 +216,7 @@ const PostListProvider = ({ children }) => {
     }
   }, [state.postList]);
 
-  const addPost = (userId, postTitle, postBody, reactions, tags, image = null) => {
+  const addPost = (userId, postTitle, postBody, reactions, tags, image = null, authorProfile = null) => {
     dispatch({
       type: "ADD_POST",
       payload: {
@@ -231,9 +231,9 @@ const PostListProvider = ({ children }) => {
         commentsCount: 0,
         comments: [],
         image: image || null,
-        authorName: "Shubham",
-        username: userId ? String(userId).toLowerCase().replace(/\s+/g, "_") : "shubham",
-        authorAvatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${userId || "Shubham"}`,
+        authorName: authorProfile?.name || "Shubham Sharma",
+        username: authorProfile?.username || (userId ? String(userId).toLowerCase().replace(/\s+/g, "_") : "shubham"),
+        authorAvatar: authorProfile?.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${userId || "Shubham"}`,
         isVerified: true,
         userId: userId || "shubham",
         tags: Array.isArray(tags) ? tags : [],

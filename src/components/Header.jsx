@@ -10,7 +10,7 @@ const NOTIFICATIONS = [
   { id: 3, text: "Sarah Jenkins started following your sphere", time: "1h ago" },
 ];
 
-const Header = () => {
+const Header = ({ setSelectedTab }) => {
   const { searchQuery, setSearchQuery } = useSearch();
   const { showToast } = useToast();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -108,13 +108,17 @@ const Header = () => {
         <button
           type="button"
           className="btn-header-login"
-          onClick={() =>
-            showToast({
-              type: "info",
-              title: "Demo Mode",
-              message: "You are currently logged in as @shubham.",
-            })
-          }
+          onClick={() => {
+            if (setSelectedTab) {
+              setSelectedTab("Profile");
+            } else {
+              showToast({
+                type: "info",
+                title: "Profile",
+                message: "Navigating to profile view.",
+              });
+            }
+          }}
         >
           Profile
         </button>

@@ -6,7 +6,8 @@ import { PostList as PostListData } from "../store/post-list-store";
 import { useSearch } from "../store/SearchContext";
 import WelcomeMessage from "./WelcomeMessage";
 import LoadingSpinner from "./LoadingSpinner";
-import { FiTrendingUp, FiSparkles, FiCode, FiBookmark, FiX, FiRefreshCw } from "react-icons/fi";
+import { FiTrendingUp, FiCode, FiBookmark, FiX, FiRefreshCw } from "react-icons/fi";
+import { RiSparklingFill } from "react-icons/ri";
 
 const PAGE_SIZE = 8;
 
@@ -122,7 +123,7 @@ const PostList = () => {
 
   const tabs = [
     { id: "trending", label: "Trending", icon: <FiTrendingUp /> },
-    { id: "foryou", label: "For You", icon: <FiSparkles /> },
+    { id: "foryou", label: "For You", icon: <RiSparklingFill /> },
     { id: "tech", label: "Tech & Dev", icon: <FiCode /> },
     { id: "bookmarks", label: "Saved", icon: <FiBookmark /> },
   ];

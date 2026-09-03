@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePostList } from "../store/post-list-store";
+import { useUserProfile } from "../store/UserProfileContext";
 import {
   MdHome,
   MdAddCircleOutline,
@@ -16,6 +17,7 @@ import { RiSparklingFill } from "react-icons/ri";
 
 const Sidebar = ({ selectedTab, setSelectedTab }) => {
   const { postList, setActiveFeedTab } = usePostList();
+  const { profile } = useUserProfile();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const bookmarkedCount = postList.filter((p) => p.bookmarked).length;
@@ -93,6 +95,16 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
 
         <li className="sidebar-nav-item" role="listitem">
           <button
+            className={`sidebar-nav-link ${selectedTab === "Profile" ? "active" : ""}`}
+            onClick={() => handleNavClick("Profile")}
+          >
+            <span className="sidebar-nav-icon"><MdPerson /></span>
+            <span className="sidebar-nav-label">Profile & Stats</span>
+          </button>
+        </li>
+
+        <li className="sidebar-nav-item" role="listitem">
+          <button
             className={`sidebar-nav-link ${selectedTab === "Create Post" ? "active" : ""}`}
             onClick={() => handleNavClick("Create Post")}
           >
@@ -125,15 +137,15 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
         >
           <div className="sidebar-avatar-container">
             <img
-              src="https://api.dicebear.com/9.x/avataaars/svg?seed=Shubham"
-              alt="Your avatar"
+              src={profile.avatarUrl}
+              alt={`${profile.name}'s avatar`}
               className="sidebar-avatar"
             />
             <span className="user-online-dot" />
           </div>
           <div className="sidebar-user-info">
-            <div className="sidebar-user-name">Shubham</div>
-            <div className="sidebar-user-handle">@shubham</div>
+            <div className="sidebar-user-name">{profile.name}</div>
+            <div className="sidebar-user-handle">{profile.handle}</div>
           </div>
           <span className="user-menu-chevron" aria-hidden="true">
             {userMenuOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
@@ -142,14 +154,32 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
 
         {userMenuOpen && (
           <div className="user-dropdown-popover" role="menu">
-            <button role="menuitem" className="popover-item">
+            <button
+              role="menuitem"
+              className="popover-item"
+              onClick={() => {
+                setSelectedTab("Profile");
+                setUserMenuOpen(false);
+              }}
+            >
               <MdPerson /> Profile & Stats
             </button>
-            <button role="menuitem" className="popover-item">
-              <MdSettings /> Preferences
+            <button
+              role="menuitem"
+              className="popover-item"
+              onClick={() => {
+                setSelectedTab("Profile");
+                setUserMenuOpen(false);
+              }}
+            >
+              <MdSettings /> Customize Avatar
             </button>
             <div className="popover-divider" />
-            <button role="menuitem" className="popover-item text-danger">
+            <button
+              role="menuitem"
+              className="popover-item text-danger"
+              onClick={() => setUserMenuOpen(false)}
+            >
               <MdLogout /> Sign out
             </button>
           </div>
