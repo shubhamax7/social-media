@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useSearch } from "../store/SearchContext";
 import { useToast } from "./Toast";
-import { FiSearch, FiBell, FiX, FiCheck } from "react-icons/fi";
+import { useChat } from "../store/ChatContext";
+import { FiSearch, FiBell, FiX, FiCheck, FiMessageSquare } from "react-icons/fi";
 import { RiSparklingFill } from "react-icons/ri";
 
 const NOTIFICATIONS = [
@@ -13,6 +14,7 @@ const NOTIFICATIONS = [
 const Header = ({ setSelectedTab }) => {
   const { searchQuery, setSearchQuery } = useSearch();
   const { showToast } = useToast();
+  const { totalUnreadCount, setIsChatDrawerOpen, setIsChatDrawerMinimized } = useChat();
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(3);
 
@@ -104,6 +106,27 @@ const Header = ({ setSelectedTab }) => {
             </div>
           )}
         </div>
+
+        {/* Direct Messages Quick Action */}
+        <button
+          type="button"
+          className="btn-header-icon"
+          onClick={() => {
+            if (setSelectedTab) {
+              setSelectedTab("Messages");
+            } else {
+              setIsChatDrawerOpen(true);
+              setIsChatDrawerMinimized(false);
+            }
+          }}
+          aria-label="Direct Messages"
+          title="Direct Messages"
+        >
+          <FiMessageSquare />
+          {totalUnreadCount > 0 && (
+            <span className="notification-badge badge-unread-message">{totalUnreadCount}</span>
+          )}
+        </button>
 
         <button
           type="button"

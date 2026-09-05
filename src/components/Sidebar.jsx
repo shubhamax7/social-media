@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { usePostList } from "../store/post-list-store";
 import { useUserProfile } from "../store/UserProfileContext";
+import { useChat } from "../store/ChatContext";
 import {
   MdHome,
   MdAddCircleOutline,
@@ -12,12 +13,14 @@ import {
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
   MdEdit,
+  MdChatBubbleOutline,
 } from "react-icons/md";
 import { RiSparklingFill } from "react-icons/ri";
 
 const Sidebar = ({ selectedTab, setSelectedTab }) => {
   const { postList, setActiveFeedTab } = usePostList();
   const { profile } = useUserProfile();
+  const { totalUnreadCount } = useChat();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const bookmarkedCount = postList.filter((p) => p.bookmarked).length;
@@ -100,6 +103,19 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
           >
             <span className="sidebar-nav-icon"><MdPerson /></span>
             <span className="sidebar-nav-label">Profile & Stats</span>
+          </button>
+        </li>
+
+        <li className="sidebar-nav-item" role="listitem">
+          <button
+            className={`sidebar-nav-link ${selectedTab === "Messages" ? "active" : ""}`}
+            onClick={() => handleNavClick("Messages")}
+          >
+            <span className="sidebar-nav-icon"><MdChatBubbleOutline /></span>
+            <span className="sidebar-nav-label">Messages</span>
+            {totalUnreadCount > 0 && (
+              <span className="sidebar-pill-badge badge-unread">{totalUnreadCount}</span>
+            )}
           </button>
         </li>
 

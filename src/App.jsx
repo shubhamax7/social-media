@@ -7,10 +7,13 @@ import RightSidebar from "./components/RightSidebar";
 import CreatePost from "./components/CreatePost";
 import PostList from "./components/PostList";
 import UserProfile from "./components/UserProfile";
+import MessagesView from "./components/MessagesView";
+import FloatingChatDrawer from "./components/FloatingChatDrawer";
 import { useState } from "react";
 import PostListProvider from "./store/post-list-store";
 import SearchProvider from "./store/SearchContext";
 import UserProfileProvider from "./store/UserProfileContext";
+import { ChatProvider } from "./store/ChatContext";
 import { ToastProvider } from "./components/Toast";
 
 function App() {
@@ -20,41 +23,48 @@ function App() {
     <PostListProvider>
       <UserProfileProvider>
         <SearchProvider>
-          <ToastProvider>
-            <div className="app-container">
-              {/* Left Column: Navigation Sidebar */}
-              <Sidebar selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+          <ChatProvider>
+            <ToastProvider>
+              <div className="app-container">
+                {/* Left Column: Navigation Sidebar */}
+                <Sidebar selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
 
-              {/* Center + Right Content Area */}
-              <div className="content">
-                <Header setSelectedTab={setSelectedTab} />
+                {/* Center + Right Content Area */}
+                <div className="content">
+                  <Header setSelectedTab={setSelectedTab} />
 
-                <div className="app-main-layout">
-                  {/* Center Column: Feed, Create Post Form, or User Profile */}
-                  <main className="main-feed-column">
-                    {selectedTab === "Home" ? (
-                      <PostList />
-                    ) : selectedTab === "Create Post" ? (
-                      <CreatePost setSelectedTab={setSelectedTab} />
-                    ) : selectedTab === "Profile" ? (
-                      <UserProfile setSelectedTab={setSelectedTab} />
-                    ) : (
-                      <PostList />
+                  <div className={`app-main-layout ${selectedTab === "Messages" ? "messages-layout-active" : ""}`}>
+                    {/* Center Column: Feed, Create Post Form, User Profile, or Messages */}
+                    <main className={`main-feed-column ${selectedTab === "Messages" ? "main-messages-expanded" : ""}`}>
+                      {selectedTab === "Home" ? (
+                        <PostList />
+                      ) : selectedTab === "Create Post" ? (
+                        <CreatePost setSelectedTab={setSelectedTab} />
+                      ) : selectedTab === "Profile" ? (
+                        <UserProfile setSelectedTab={setSelectedTab} />
+                      ) : selectedTab === "Messages" ? (
+                        <MessagesView />
+                      ) : (
+                        <PostList />
+                      )}
+                    </main>
+
+                    {/* Right Column: Widgets, Trends, Creators (visible on feed & profile) */}
+                    {(selectedTab === "Home" || selectedTab === "Profile") && (
+                      <div className="right-widgets-column">
+                        <RightSidebar />
+                      </div>
                     )}
-                  </main>
+                  </div>
 
-                  {/* Right Column: Widgets, Trends, Creators (visible on feed & profile) */}
-                  {(selectedTab === "Home" || selectedTab === "Profile") && (
-                    <div className="right-widgets-column">
-                      <RightSidebar />
-                    </div>
-                  )}
+                  <Footer />
                 </div>
 
-                <Footer />
+                {/* Global Dockable Floating Messenger Drawer */}
+                <FloatingChatDrawer setSelectedTab={setSelectedTab} />
               </div>
-            </div>
-          </ToastProvider>
+            </ToastProvider>
+          </ChatProvider>
         </SearchProvider>
       </UserProfileProvider>
     </PostListProvider>

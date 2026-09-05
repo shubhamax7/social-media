@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { usePostList } from "../store/post-list-store";
 import { useToast } from "./Toast";
-import { FiTrendingUp, FiUserPlus, FiCheck, FiZap, FiActivity } from "react-icons/fi";
+import { useChat } from "../store/ChatContext";
+import { FiTrendingUp, FiUserPlus, FiCheck, FiZap, FiActivity, FiMessageSquare } from "react-icons/fi";
 import { RiVerifiedBadgeFill } from "react-icons/ri";
 
 const TRENDING_TOPICS = [
@@ -42,6 +43,7 @@ const SUGGESTED_CREATORS = [
 const RightSidebar = () => {
   const { setActiveTag, activeTag } = usePostList();
   const { showToast } = useToast();
+  const { startConversationWithUser } = useChat();
   const [followingMap, setFollowingMap] = useState({});
 
   const toggleFollow = (creator) => {
@@ -158,20 +160,38 @@ const RightSidebar = () => {
                   <span className="creator-handle">{creator.handle}</span>
                   <span className="creator-role">{creator.role}</span>
                 </div>
-                <button
-                  type="button"
-                  className={`btn-follow ${isFollowing ? "following" : ""}`}
-                  onClick={() => toggleFollow(creator)}
-                  aria-label={isFollowing ? `Unfollow ${creator.name}` : `Follow ${creator.name}`}
-                >
-                  {isFollowing ? (
-                    <>
-                      <FiCheck /> Following
-                    </>
-                  ) : (
-                    "Follow"
-                  )}
-                </button>
+                <div className="creator-actions-row">
+                  <button
+                    type="button"
+                    className="btn-creator-msg"
+                    onClick={() => {
+                      startConversationWithUser(creator);
+                      showToast({
+                        type: "info",
+                        title: "Direct Message",
+                        message: `Opened direct chat with ${creator.name}.`,
+                      });
+                    }}
+                    title={`Message ${creator.name}`}
+                    aria-label={`Message ${creator.name}`}
+                  >
+                    <FiMessageSquare />
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-follow ${isFollowing ? "following" : ""}`}
+                    onClick={() => toggleFollow(creator)}
+                    aria-label={isFollowing ? `Unfollow ${creator.name}` : `Follow ${creator.name}`}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <FiCheck /> Following
+                      </>
+                    ) : (
+                      "Follow"
+                    )}
+                  </button>
+                </div>
               </div>
             );
           })}
