@@ -14,7 +14,10 @@ import PostListProvider from "./store/post-list-store";
 import SearchProvider from "./store/SearchContext";
 import UserProfileProvider from "./store/UserProfileContext";
 import { ChatProvider } from "./store/ChatContext";
+import { StoriesProvider } from "./store/StoriesContext";
 import { ToastProvider } from "./components/Toast";
+import StoryViewerModal from "./components/StoryViewerModal";
+import CreateStoryModal from "./components/CreateStoryModal";
 
 function App() {
   const [selectedTab, setSelectedTab] = useState("Home");
@@ -24,8 +27,9 @@ function App() {
       <UserProfileProvider>
         <SearchProvider>
           <ChatProvider>
-            <ToastProvider>
-              <div className="app-container">
+            <StoriesProvider>
+              <ToastProvider>
+                <div className="app-container">
                 {/* Left Column: Navigation Sidebar */}
                 <Sidebar selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
 
@@ -62,13 +66,18 @@ function App() {
 
                 {/* Global Dockable Floating Messenger Drawer */}
                 <FloatingChatDrawer setSelectedTab={setSelectedTab} />
+
+                {/* Global Interactive Stories Viewer & Creator Modals */}
+                <StoryViewerModal />
+                <CreateStoryModal />
               </div>
             </ToastProvider>
-          </ChatProvider>
-        </SearchProvider>
-      </UserProfileProvider>
-    </PostListProvider>
-  );
+          </StoriesProvider>
+        </ChatProvider>
+      </SearchProvider>
+    </UserProfileProvider>
+  </PostListProvider>
+);
 }
 
 export default App;

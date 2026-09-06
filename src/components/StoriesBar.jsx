@@ -1,43 +1,36 @@
 import { FiPlus } from "react-icons/fi";
-import { useToast } from "./Toast";
-
-const STORIES = [
-  { id: 1, name: "Your Story", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Shubham", isUser: true },
-  { id: 2, name: "Sarah J.", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=SarahJ", hasUnseen: true },
-  { id: 3, name: "Devon V.", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=DevonV", hasUnseen: true },
-  { id: 4, name: "Elena R.", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=ElenaR", hasUnseen: true },
-  { id: 5, name: "Marcus B.", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=MarcusB", hasUnseen: false },
-  { id: 6, name: "Aria Kim", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=AriaK", hasUnseen: true },
-  { id: 7, name: "Liam Wu", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=LiamW", hasUnseen: false },
-];
+import { useStories } from "../store/StoriesContext";
 
 const StoriesBar = () => {
-  const { showToast } = useToast();
+  const { allStoriesList, openStoryViewer, openStoryCreator } = useStories();
 
-  const handleClick = (story) => {
+  const handleStoryClick = (story, e) => {
     if (story.isUser) {
-      showToast({
-        type: "info",
-        title: "Story creation",
-        message: "Add image or video to share to your story for 24 hours.",
-      });
+      if (story.slides && story.slides.length > 0) {
+        openStoryViewer(story.id, 0);
+      } else {
+        openStoryCreator();
+      }
     } else {
-      showToast({
-        type: "info",
-        title: `${story.name}'s Story`,
-        message: `Viewing active story highlights from ${story.name}.`,
-      });
+      openStoryViewer(story.id);
     }
+  };
+
+  const handleAddClick = (e) => {
+    e.stopPropagation();
+    openStoryCreator();
   };
 
   return (
     <section className="stories-container" aria-label="Stories and Highlights">
       <div className="stories-scroll">
-        {STORIES.map((story) => (
+        {allStoriesList.map((story) => (
           <button
             key={story.id}
-            className={`story-item ${story.isUser ? "story-item-user" : ""} ${story.hasUnseen ? "has-unseen" : ""}`}
-            onClick={() => handleClick(story)}
+            className={`story-item ${story.isUser ? "story-item-user" : ""} ${
+              story.hasUnseen ? "has-unseen" : "is-seen"
+            }`}
+            onClick={(e) => handleStoryClick(story, e)}
             aria-label={`View ${story.name}`}
           >
             <div className="story-avatar-wrapper">
@@ -46,9 +39,16 @@ const StoriesBar = () => {
                 alt={story.name}
                 className="story-avatar"
                 loading="lazy"
+                width={52}
+                height={52}
               />
               {story.isUser && (
-                <div className="story-add-badge">
+                <div
+                  className="story-add-badge"
+                  onClick={handleAddClick}
+                  title="Create new story"
+                  aria-label="Create new story"
+                >
                   <FiPlus />
                 </div>
               )}
