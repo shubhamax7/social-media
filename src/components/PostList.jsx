@@ -7,6 +7,7 @@ import { useSearch } from "../store/SearchContext";
 import WelcomeMessage from "./WelcomeMessage";
 import LoadingSpinner from "./LoadingSpinner";
 import { FiTrendingUp, FiCode, FiBookmark, FiX, FiRefreshCw } from "react-icons/fi";
+import { MdHowToVote } from "react-icons/md";
 import { RiSparklingFill } from "react-icons/ri";
 
 const PAGE_SIZE = 8;
@@ -100,6 +101,9 @@ const PostList = () => {
     if (activeFeedTab === "bookmarks") {
       return post.bookmarked === true;
     }
+    if (activeFeedTab === "polls") {
+      return Boolean(post.poll);
+    }
     if (activeFeedTab === "tech") {
       const techTags = ["react", "webdev", "ai", "vite", "coding", "tech", "design"];
       return post.tags?.some((t) => techTags.includes(t.toLowerCase()));
@@ -124,6 +128,7 @@ const PostList = () => {
   const tabs = [
     { id: "trending", label: "Trending", icon: <FiTrendingUp /> },
     { id: "foryou", label: "For You", icon: <RiSparklingFill /> },
+    { id: "polls", label: "Polls & Debates", icon: <MdHowToVote /> },
     { id: "tech", label: "Tech & Dev", icon: <FiCode /> },
     { id: "bookmarks", label: "Saved", icon: <FiBookmark /> },
   ];
@@ -152,6 +157,11 @@ const PostList = () => {
               {tab.id === "bookmarks" && (
                 <span className="tab-badge">
                   {postList.filter((p) => p.bookmarked).length}
+                </span>
+              )}
+              {tab.id === "polls" && (
+                <span className="tab-badge">
+                  {postList.filter((p) => p.poll).length}
                 </span>
               )}
             </button>
@@ -219,6 +229,14 @@ const PostList = () => {
             <h2 className="empty-state-title">No saved posts</h2>
             <p className="empty-state-subtitle">
               Click the bookmark icon on any post to save it for reading later.
+            </p>
+          </div>
+        ) : activeFeedTab === "polls" ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">🗳️</div>
+            <h2 className="empty-state-title">No active community polls</h2>
+            <p className="empty-state-subtitle">
+              Launch a debate! Click the Poll icon in Quick Compose above to get votes and insights.
             </p>
           </div>
         ) : searchQuery.trim() || activeTag !== "all" ? (

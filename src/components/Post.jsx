@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { usePostList } from "../store/post-list-store";
+import { usePostList, generatePostSummary } from "../store/post-list-store";
 import { useToast } from "./Toast";
+import PollCard from "./PollCard";
 import {
   MdDeleteOutline,
   MdMoreHoriz,
@@ -16,7 +17,7 @@ import {
   FiCheck,
 } from "react-icons/fi";
 import { AiFillHeart } from "react-icons/ai";
-import { RiVerifiedBadgeFill } from "react-icons/ri";
+import { RiVerifiedBadgeFill, RiSparklingFill } from "react-icons/ri";
 
 const getRelativeTime = (isoString) => {
   if (!isoString) return "Just now";
@@ -37,6 +38,7 @@ const Post = ({ post }) => {
   const { showToast } = useToast();
 
   const [showComments, setShowComments] = useState(false);
+  const [showAiSummary, setShowAiSummary] = useState(false);
   const [commentInput, setCommentInput] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -189,6 +191,9 @@ const Post = ({ post }) => {
         </div>
       )}
 
+      {/* Embedded Community Poll */}
+      {post.poll && <PollCard poll={post.poll} postId={post.id} />}
+
       {/* Tags */}
       {post.tags?.length > 0 && (
         <div className="post-tags" role="list" aria-label="Post tags">
@@ -261,6 +266,19 @@ const Post = ({ post }) => {
           </span>
         </button>
 
+        {/* AI Summary Toggle */}
+        <button
+          className={`post-action-btn ai-summary-btn ${showAiSummary ? "active" : ""}`}
+          onClick={() => setShowAiSummary(!showAiSummary)}
+          aria-label="Toggle AI Summary"
+          title="AI Summary & Key Takeaways"
+        >
+          <span className="action-icon">
+            <RiSparklingFill className="text-sparkle" />
+          </span>
+          <span className="action-label-text">AI Summary</span>
+        </button>
+
         {/* Share */}
         <button
           className="post-action-btn share-btn"
@@ -273,6 +291,41 @@ const Post = ({ post }) => {
           </span>
         </button>
       </div>
+
+      {/* Expandable AI Summary Section */}
+      {showAiSummary && (
+        <div className="post-ai-summary-box" aria-label="AI Summary">
+          <div className="ai-summary-badge-row">
+            <div className="ai-summary-badge">
+              <RiSparklingFill /> AI Key Takeaways
+            </div>
+            <button
+              type="button"
+              className="ai-summary-copy-btn"
+              onClick={() => {
+                const takeaways = post.aiSummary || generatePostSummary(post.title, post.body);
+                navigator.clipboard?.writeText(takeaways.map((t) => `• ${t}`).join("\n"));
+                showToast({
+                  type: "success",
+                  title: "Copied Takeaways! 📋",
+                  message: "AI summary copied to clipboard.",
+                });
+              }}
+              title="Copy AI summary"
+            >
+              <FiShare2 /> Copy
+            </button>
+          </div>
+          <ul className="ai-summary-list">
+            {(post.aiSummary || generatePostSummary(post.title, post.body)).map((point, idx) => (
+              <li key={idx} className="ai-summary-item">
+                <span className="ai-summary-bullet">✦</span>
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Expandable Comments Section */}
       {showComments && (

@@ -1,10 +1,41 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 
+export const generatePostSummary = (title = "", body = "") => {
+  const text = `${title} ${body}`.trim();
+  if (!text) {
+    return [
+      "Highlights modern web engineering practices and design architecture.",
+      "Emphasizes performance optimizations and user interaction speed.",
+      "Shared with the SocialSphere developer community."
+    ];
+  }
+  const sentences = text
+    .split(/(?<=[.?!])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 15);
+
+  if (sentences.length >= 3) {
+    return sentences.slice(0, 3);
+  }
+  if (sentences.length === 2) {
+    return [
+      sentences[0],
+      sentences[1],
+      "Key community discussion spark on SocialSphere."
+    ];
+  }
+  return [
+    title || "Core technical concept explored.",
+    sentences[0] || body.slice(0, 80) + "...",
+    "Live conversation open for developer insights and feedback."
+  ];
+};
+
 const SEED_POSTS = [
   {
     id: 9901,
     title: "Building next-generation design systems with Glassmorphism & React 19 ✨",
-    body: "Just finished redesigning SocialSphere with unified design tokens, dynamic micro-interactions, and fluid typography. The dark theme contrast ratios and glass reflections look stunning on OLED displays!",
+    body: "Just finished redesigning SocialSphere with unified design tokens, dynamic micro-interactions, and fluid typography. The dark theme contrast ratios and glass reflections look stunning on OLED displays! What styling foundation does your team prefer today?",
     reactions: 284,
     liked: true,
     repostsCount: 42,
@@ -23,11 +54,28 @@ const SEED_POSTS = [
     userId: "sarah_j",
     tags: ["design", "react", "frontend", "uiux"],
     createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    poll: {
+      question: "Which styling approach does your team prefer in 2026?",
+      options: [
+        { id: "opt1", text: "CSS Tokens & Vanilla CSS / PostCSS", votes: 142 },
+        { id: "opt2", text: "Tailwind CSS v4", votes: 119 },
+        { id: "opt3", text: "StyleX / Zero-runtime CSS", votes: 48 },
+        { id: "opt4", text: "CSS Modules", votes: 35 }
+      ],
+      totalVotes: 344,
+      userVotedOptionId: null,
+      expiresAt: "Active · Ends in 2 days"
+    },
+    aiSummary: [
+      "Introduces unified design tokens and responsive glassmorphism across OLED screens.",
+      "Eliminates bloated CSS-in-JS runtimes in favor of fluid CSS custom properties.",
+      "Optimizes layout structure for high-framerate desktop and mobile experiences."
+    ]
   },
   {
     id: 9902,
     title: "AI agents and autonomous developer workflows in 2026 🤖⚡",
-    body: "We are entering an era where software pair programming is completely fluid. Agents can analyze full-stack repositories, identify UI friction points, rewrite stylesheets, and verify in headless browsers in minutes. What's your favorite agent workflow?",
+    body: "We are entering an era where software pair programming is completely fluid. Agents can analyze full-stack repositories, identify UI friction points, rewrite stylesheets, and verify in headless browsers in minutes. Where do you find the highest leverage?",
     reactions: 198,
     liked: false,
     repostsCount: 31,
@@ -45,6 +93,22 @@ const SEED_POSTS = [
     userId: "devon_v",
     tags: ["ai", "coding", "tech", "future"],
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    poll: {
+      question: "Where do autonomous AI coding agents provide the highest leverage?",
+      options: [
+        { id: "p2_1", text: "Full-repo refactoring & CSS polishing", votes: 89 },
+        { id: "p2_2", text: "Autonomous test verification & regression checking", votes: 115 },
+        { id: "p2_3", text: "Documentation & API scaffolding", votes: 24 }
+      ],
+      totalVotes: 228,
+      userVotedOptionId: "p2_2",
+      expiresAt: "Active · Ends in 18 hours"
+    },
+    aiSummary: [
+      "Software engineering is shifting toward autonomous pair-programming agents.",
+      "Automated browser validation ensures high visual fidelity without manual clicking.",
+      "Agents dramatically accelerate bug diagnosis and cross-system refactoring."
+    ]
   },
   {
     id: 9903,
@@ -64,6 +128,11 @@ const SEED_POSTS = [
     userId: "shubham",
     tags: ["vite", "javascript", "webdev"],
     createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    aiSummary: [
+      "Vite 7 delivers sub-100ms cold starts and 15ms HMR updates.",
+      "Native CSS variables streamline real-time dark mode and theme customizability.",
+      "Replaces heavy CSS runtime overhead with browser-native performant stylesheets."
+    ]
   }
 ];
 
@@ -81,6 +150,7 @@ export const PostList = createContext({
   bookmarkPost: () => {},
   repostPost: () => {},
   addComment: () => {},
+  votePoll: () => {},
   setFetchStatus: () => {},
 });
 
@@ -168,6 +238,40 @@ const postListReducer = (state, action) => {
             : post
         ),
       };
+    case "VOTE_POLL": {
+      const { postId, optionId } = action.payload;
+      return {
+        ...state,
+        postList: state.postList.map((post) => {
+          if (post.id !== postId || !post.poll) return post;
+          const prevSelected = post.poll.userVotedOptionId;
+          const isUnvoting = prevSelected === optionId;
+
+          const newOptions = post.poll.options.map((opt) => {
+            let votes = opt.votes || 0;
+            if (opt.id === prevSelected) {
+              votes = Math.max(0, votes - 1);
+            }
+            if (!isUnvoting && opt.id === optionId) {
+              votes += 1;
+            }
+            return { ...opt, votes };
+          });
+
+          const totalVotes = newOptions.reduce((acc, curr) => acc + curr.votes, 0);
+
+          return {
+            ...post,
+            poll: {
+              ...post.poll,
+              options: newOptions,
+              userVotedOptionId: isUnvoting ? null : optionId,
+              totalVotes,
+            },
+          };
+        }),
+      };
+    }
     case "SET_ACTIVE_TAG":
       return { ...state, activeTag: action.payload };
     case "SET_FEED_TAB":
@@ -179,9 +283,11 @@ const postListReducer = (state, action) => {
   }
 };
 
+const STORAGE_KEY = "socialsphere_posts_v5";
+
 const getInitialState = () => {
   try {
-    const saved = localStorage.getItem("socialsphere_posts");
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -210,13 +316,24 @@ const PostListProvider = ({ children }) => {
   // Sync to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem("socialsphere_posts", JSON.stringify(state.postList));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.postList));
     } catch (e) {
       console.error("Failed to persist posts", e);
     }
   }, [state.postList]);
 
-  const addPost = (userId, postTitle, postBody, reactions, tags, image = null, authorProfile = null) => {
+  const addPost = (
+    userId,
+    postTitle,
+    postBody,
+    reactions,
+    tags,
+    image = null,
+    authorProfile = null,
+    poll = null,
+    aiSummary = null
+  ) => {
+    const summary = aiSummary || generatePostSummary(postTitle, postBody);
     dispatch({
       type: "ADD_POST",
       payload: {
@@ -237,6 +354,8 @@ const PostListProvider = ({ children }) => {
         isVerified: true,
         userId: userId || "shubham",
         tags: Array.isArray(tags) ? tags : [],
+        poll: poll || null,
+        aiSummary: summary,
         createdAt: new Date().toISOString(),
       },
     });
@@ -269,6 +388,13 @@ const PostListProvider = ({ children }) => {
     });
   };
 
+  const votePoll = (postId, optionId) => {
+    dispatch({
+      type: "VOTE_POLL",
+      payload: { postId, optionId },
+    });
+  };
+
   const setActiveTag = (tag) => {
     dispatch({ type: "SET_ACTIVE_TAG", payload: tag });
   };
@@ -295,6 +421,7 @@ const PostListProvider = ({ children }) => {
         bookmarkPost,
         repostPost,
         addComment,
+        votePoll,
         setActiveTag,
         setActiveFeedTab,
         setFetchStatus,

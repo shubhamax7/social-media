@@ -14,6 +14,7 @@ import {
   MdKeyboardArrowUp,
   MdEdit,
   MdChatBubbleOutline,
+  MdHowToVote,
 } from "react-icons/md";
 import { RiSparklingFill } from "react-icons/ri";
 
@@ -24,6 +25,7 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const bookmarkedCount = postList.filter((p) => p.bookmarked).length;
+  const pollsCount = postList.filter((p) => p.poll).length;
 
   const handleNavClick = (tabId) => {
     if (tabId === "Saved") {
@@ -32,6 +34,9 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
     } else if (tabId === "Explore") {
       setSelectedTab("Home");
       setActiveFeedTab("trending");
+    } else if (tabId === "Polls") {
+      setSelectedTab("Home");
+      setActiveFeedTab("polls");
     } else {
       setSelectedTab(tabId);
     }
@@ -80,6 +85,19 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
           >
             <span className="sidebar-nav-icon"><MdExplore /></span>
             <span className="sidebar-nav-label">Explore & Trends</span>
+          </button>
+        </li>
+
+        <li className="sidebar-nav-item" role="listitem">
+          <button
+            className="sidebar-nav-link"
+            onClick={() => handleNavClick("Polls")}
+          >
+            <span className="sidebar-nav-icon"><MdHowToVote /></span>
+            <span className="sidebar-nav-label">Polls & Debates</span>
+            {pollsCount > 0 && (
+              <span className="sidebar-pill-badge">{pollsCount}</span>
+            )}
           </button>
         </li>
 

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { usePostList } from "../store/post-list-store";
 import { useUserProfile } from "../store/UserProfileContext";
 import { useToast } from "./Toast";
-import { MdSend, MdImage, MdPreview } from "react-icons/md";
-import { FiTag, FiCheck, FiArrowLeft } from "react-icons/fi";
-import { RiVerifiedBadgeFill } from "react-icons/ri";
+import AiMagicModal from "./AiMagicModal";
+import PollCard from "./PollCard";
+import { MdSend, MdImage, MdPreview, MdHowToVote } from "react-icons/md";
+import { FiTag, FiCheck, FiArrowLeft, FiPlus, FiTrash2 } from "react-icons/fi";
+import { RiVerifiedBadgeFill, RiSparklingFill } from "react-icons/ri";
 
 const MAX_BODY_LENGTH = 600;
 
@@ -29,6 +31,10 @@ const CreatePost = ({ setSelectedTab }) => {
   const [selectedImage, setSelectedImage] = useState("");
   const [customImageUrl, setCustomImageUrl] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [includePoll, setIncludePoll] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState("");
+  const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,6 +42,26 @@ const CreatePost = ({ setSelectedTab }) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
+  };
+
+  const handleAddPollOption = () => {
+    if (pollOptions.length < 4) {
+      setPollOptions((prev) => [...prev, ""]);
+    }
+  };
+
+  const handleRemovePollOption = (idx) => {
+    if (pollOptions.length > 2) {
+      setPollOptions((prev) => prev.filter((_, i) => i !== idx));
+    }
+  };
+
+  const handlePollOptionChange = (idx, val) => {
+    setPollOptions((prev) => {
+      const next = [...prev];
+      next[idx] = val;
+      return next;
+    });
   };
 
   const validate = () => {
@@ -46,6 +72,13 @@ const CreatePost = ({ setSelectedTab }) => {
     if (!body.trim()) errs.body = "Post content is required.";
     else if (body.length > MAX_BODY_LENGTH)
       errs.body = `Content must be under ${MAX_BODY_LENGTH} characters.`;
+
+    if (includePoll) {
+      const validOptions = pollOptions.map((o) => o.trim()).filter(Boolean);
+      if (validOptions.length < 2) {
+        errs.poll = "Please provide at least 2 non-empty poll choices.";
+      }
+    }
 
     return errs;
   };
@@ -59,6 +92,22 @@ const CreatePost = ({ setSelectedTab }) => {
     setIsSubmitting(true);
     const finalImage = customImageUrl.trim() || selectedImage || null;
 
+    let builtPoll = null;
+    if (includePoll) {
+      const validOptions = pollOptions.map((o) => o.trim()).filter(Boolean);
+      builtPoll = {
+        question: pollQuestion.trim() || title.trim(),
+        options: validOptions.map((opt, idx) => ({
+          id: `opt_${Date.now()}_${idx}`,
+          text: opt,
+          votes: 0,
+        })),
+        totalVotes: 0,
+        userVotedOptionId: null,
+        expiresAt: "Active · Ends in 3 days",
+      };
+    }
+
     setTimeout(() => {
       addPost(
         profile.username || "shubham",
@@ -67,15 +116,18 @@ const CreatePost = ({ setSelectedTab }) => {
         0,
         selectedTags,
         finalImage,
-        profile
+        profile,
+        builtPoll
       );
 
       setIsSubmitting(false);
 
       showToast({
         type: "success",
-        title: "Post published to feed! 🚀",
-        message: "Your story has been broadcast to all followers.",
+        title: builtPoll ? "Poll & Post published! 🗳️" : "Post published to feed! 🚀",
+        message: builtPoll
+          ? "Your community poll is now live for voting."
+          : "Your story has been broadcast to all followers.",
       });
 
       setSelectedTab("Home");
@@ -96,13 +148,24 @@ const CreatePost = ({ setSelectedTab }) => {
         >
           <FiArrowLeft /> Back to Feed
         </button>
-        <button
-          type="button"
-          className={`btn-toggle-preview ${showPreview ? "active" : ""}`}
-          onClick={() => setShowPreview(!showPreview)}
-        >
-          <MdPreview /> {showPreview ? "Hide Preview" : "Live Preview"}
-        </button>
+
+        <div className="create-post-topbar-actions">
+          <button
+            type="button"
+            className="btn-ai-studio-trigger"
+            onClick={() => setIsAiModalOpen(true)}
+            title="Open AI Post Assistant & Viral Studio"
+          >
+            <RiSparklingFill /> AI Magic Studio
+          </button>
+          <button
+            type="button"
+            className={`btn-toggle-preview ${showPreview ? "active" : ""}`}
+            onClick={() => setShowPreview(!showPreview)}
+          >
+            <MdPreview /> {showPreview ? "Hide Preview" : "Live Preview"}
+          </button>
+        </div>
       </div>
 
       <div className="create-post-layout-grid">
@@ -180,6 +243,76 @@ const CreatePost = ({ setSelectedTab }) => {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Interactive Community Poll (Optional) */}
+            <div className="form-group create-poll-section">
+              <div className="create-poll-toggle-header">
+                <label className="form-label" style={{ marginBottom: 0 }}>
+                  <MdHowToVote style={{ marginRight: 6 }} /> Attach Community Poll
+                </label>
+                <label className="poll-switch-container">
+                  <input
+                    type="checkbox"
+                    checked={includePoll}
+                    onChange={(e) => setIncludePoll(e.target.checked)}
+                  />
+                  <span className="poll-switch-slider" />
+                </label>
+              </div>
+
+              {includePoll && (
+                <div className="create-poll-inputs-wrap">
+                  <div className="form-group" style={{ marginBottom: 12 }}>
+                    <label className="form-sublabel">Poll Question</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g. Which tool/framework do you use most?"
+                      value={pollQuestion}
+                      onChange={(e) => setPollQuestion(e.target.value)}
+                    />
+                  </div>
+
+                  <label className="form-sublabel">Choices (Min 2, Max 4)</label>
+                  <div className="create-poll-options-grid">
+                    {pollOptions.map((opt, idx) => (
+                      <div key={idx} className="create-poll-opt-row">
+                        <span className="create-poll-opt-index">{idx + 1}</span>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder={`Option ${idx + 1}`}
+                          value={opt}
+                          onChange={(e) => handlePollOptionChange(idx, e.target.value)}
+                        />
+                        {pollOptions.length > 2 && (
+                          <button
+                            type="button"
+                            className="btn-del-choice"
+                            onClick={() => handleRemovePollOption(idx)}
+                            aria-label={`Remove option ${idx + 1}`}
+                          >
+                            <FiTrash2 />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {pollOptions.length < 4 && (
+                    <button
+                      type="button"
+                      className="btn-add-choice"
+                      onClick={handleAddPollOption}
+                    >
+                      <FiPlus /> Add Choice ({pollOptions.length}/4)
+                    </button>
+                  )}
+
+                  {errors.poll && <span className="form-error">{errors.poll}</span>}
+                </div>
+              )}
             </div>
 
             {/* Media Attachment */}
@@ -266,6 +399,21 @@ const CreatePost = ({ setSelectedTab }) => {
                     "Start typing in the content box to see your live preview rendered in real time."}
                 </p>
 
+                {includePoll && pollOptions.some((o) => o.trim()) && (
+                  <PollCard
+                    poll={{
+                      question: pollQuestion.trim() || title || "Community Poll Preview",
+                      options: pollOptions
+                        .filter((o) => o.trim())
+                        .map((o, idx) => ({ id: `prev_${idx}`, text: o, votes: 0 })),
+                      totalVotes: 0,
+                      userVotedOptionId: null,
+                      expiresAt: "Preview Mode",
+                    }}
+                    postId="preview"
+                  />
+                )}
+
                 {activeImage && (
                   <div className="post-image-container">
                     <img
@@ -290,6 +438,22 @@ const CreatePost = ({ setSelectedTab }) => {
           </div>
         )}
       </div>
+
+      {/* AI Studio Copilot Modal */}
+      <AiMagicModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        onApply={({ title: newTitle, body: newBody, tags: newTags }) => {
+          if (newTitle) setTitle(newTitle);
+          if (newBody) setBody(newBody);
+          if (newTags?.length) setSelectedTags(newTags);
+        }}
+        initialDraft={{
+          title,
+          body,
+          tags: selectedTags,
+        }}
+      />
     </div>
   );
 };

@@ -206,7 +206,9 @@ export const ChatProvider = ({ children }) => {
   // Automatically mark active conversation as read when selected
   useEffect(() => {
     if (activeConversationId) {
-      markAsRead(activeConversationId);
+      queueMicrotask(() => {
+        markAsRead(activeConversationId);
+      });
     }
   }, [activeConversationId]);
 

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "../store/ChatContext";
-import { useToast } from "./Toast";
 import {
   FiMessageSquare,
   FiChevronUp,
@@ -29,7 +28,6 @@ const FloatingChatDrawer = ({ setSelectedTab }) => {
     markAsRead,
   } = useChat();
 
-  const { showToast } = useToast();
   const [drawerMode, setDrawerMode] = useState("chat"); // "list" or "chat"
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef(null);
